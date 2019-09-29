@@ -1,0 +1,119 @@
+---
+title: "p8105_hw2_dd2948"
+author: "David DeStephano"
+date: "September 28, 2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo=FALSE}
+library(tidyverse)
+```
+
+##Question 1
+#Mr Trash Wheel
+```{r echo=FALSE}
+trash<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 1)
+
+trash<-trash%>%
+  janitor::clean_names() %>%
+    select(-x15) %>%
+  drop_na(dumpster) %>%
+  mutate(sports_balls=as.integer(sports_balls))
+  
+```
+
+#Precipitation
+```{r echo=FALSE}
+precip2017<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = "A2:B14") %>%  
+  janitor::clean_names() %>%
+  drop_na() %>%
+  mutate(year=2017) 
+  
+precip2018<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 3, range = "A2:B14") %>%  
+  janitor::clean_names() %>%
+  drop_na() %>%
+  mutate(year=2018) 
+
+precip2017_2018 <-bind_rows(precip2017, precip2018)%>%
+  mutate(month=month.name[month])
+
+```
+#############
+#Write a Paragraph
+#############
+
+
+
+##Question 2
+```{r}
+pols<-read_csv("./data/fivethirtyeight_datasets/pols-month.csv")
+
+unemployment<-read_csv("./data/fivethirtyeight_datasets/unemployment.csv")
+
+snp<-read_csv("./data/fivethirtyeight_datasets/snp.csv")
+
+
+pols_tidy <- pols %>%
+  separate(mon, into = c("year", "month", "day"), convert=TRUE) %>%
+  mutate(month=month.abb[month])%>%
+  mutate(president=ifelse(prez_gop, "gop", "dem"))%>%
+  select(-c(day, prez_gop, prez_dem))%>%
+  arrange(year, month)
+  
+snp_tidy <- snp %>%
+  separate(date, into = c("month", "day", "year"), convert=TRUE) %>%
+  select(-c(day))%>%
+  select(year, everything())%>%
+  mutate(month=month.abb[month])%>%
+  arrange(year, month)
+
+unemployment_tidy<-unemployment%>%
+  pivot_longer(
+    Jan:Dec,
+    names_to = "month", 
+    values_to = "percent_unemployed")%>%
+  rename(year=Year)
+  
+
+combined_inc<-left_join(pols_tidy, snp_tidy, by=c("year", "month"))
+
+combined<-left_join(combined_inc, unemployment_tidy, by=c("year", "month"))
+```  
+pols contained a dummy variable for whether the prsident at a given day, month, and year was a democrat, and another for republican, including a date variable.
+
+The new pols_tidy dataset includes one variable for either democrat or republican, and two variables for month and year, instead of one variable that includes the full date.
+The new dimensions of pols_tidy is `dim(pols_tidy)` (822 rows, 9 columns). The records started in April 1947 and end in April 2015
+
+The snp data is the S&P points for certain dates, starting in April 1950 and ending inFebruary 2015. There are 787 rows and 3 columns in the new dataset, before there were only 2 columns for S&P at close and the date
+
+The unemployment set contains unemployment rates for dates from Jan 1948 to Dec 2015. The original set included one variable for each month, with one variable for year (each row was one year). The new data set just has three columns, month, year, and the unemployment rate, with 816 observations
+
+##Problem 3
+
+  
+ 
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
