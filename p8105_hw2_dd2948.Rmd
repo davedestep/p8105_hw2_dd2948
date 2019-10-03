@@ -15,8 +15,8 @@ library(tidyverse)
 
 ##Question 1
 #Mr Trash Wheel
-```{r echo=FALSE}
-trash<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 1)
+```{r}
+trash<-readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 1)
 
 trash<-trash%>%
   janitor::clean_names() %>%
@@ -27,13 +27,13 @@ trash<-trash%>%
 ```
 
 #Precipitation
-```{r echo=FALSE}
-precip2017<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = "A2:B14") %>%  
+```{r}
+precip2017<-readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 6, range = "A2:B14") %>%  
   janitor::clean_names() %>%
   drop_na() %>%
   mutate(year=2017) 
   
-precip2018<-readxl::read_excel("./data/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 3, range = "A2:B14") %>%  
+precip2018<-readxl::read_excel("./data/Trash-Wheel-Collection-Totals-8-6-19.xlsx", sheet = 5, range = "A2:B14") %>%  
   janitor::clean_names() %>%
   drop_na() %>%
   mutate(year=2018) 
@@ -90,30 +90,84 @@ The new dimensions of pols_tidy is `dim(pols_tidy)` (822 rows, 9 columns). The r
 
 The snp data is the S&P points for certain dates, starting in April 1950 and ending inFebruary 2015. There are 787 rows and 3 columns in the new dataset, before there were only 2 columns for S&P at close and the date
 
-The unemployment set contains unemployment rates for dates from Jan 1948 to Dec 2015. The original set included one variable for each month, with one variable for year (each row was one year). The new data set just has three columns, month, year, and the unemployment rate, with 816 observations
+The unemployment set contains unemployment rates for dates from Jan 1948 to Dec 2015. The original set included one variable for each month, with one variable for year (each row was one year). The new data set just has three columns, month, year, and the unemployment rate, with 816 observations.
+
+The key variables in the new data set are "president", "close", and "percent_unemployed"
 
 ##Problem 3
 
-  
- 
-  
-  
-  
-  
+```{r}
+baby_names<-read_csv("./data/Popular_Baby_Names.csv")
+#The following table shows the case and naming issues with the Ethnicity variable
+table(baby_names$Ethnicity)
+
+#recode ethnicity variabe, make variables lowercase, make cell contents lowercase to remove since different name cases, duplictates with distinct()
+baby_names<- baby_names %>%
+  mutate(Ethnicity=recode(Ethnicity, "ASIAN AND PACI"="ASIAN AND PACIFIC ISLANDER"), Ethnicity=recode(Ethnicity, "BLACK NON HISP"="BLACK NON HISPANIC"), Ethnicity=recode(Ethnicity, "WHITE NON HISP"="WHITE NON HISPANIC"))%>%
+  janitor::clean_names()%>%
+  mutate(childs_first_name = str_to_lower(childs_first_name))%>%
+  distinct()
+
+table(baby_names$ethnicity)
 
 
-
-
-
-
-
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+#Produce a well-structured, reader-friendly table showing the rank in popularity of the name "Olivia" as a female baby name over time; this should have rows for ethnicities and columns for year. 
+olivia<-baby_names%>%
+  filter(childs_first_name=="olivia")%>%
+  select(-c(count))%>%
+  pivot_wider(names_from = "year_of_birth",
+              values_from=rank)
+View(olivia)
+head(olivia)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#This was the first method for creating a "similar" table for males. Where the mean rank was taken across all years and ethnicities to find the most popular name oveall. Alternative table (as specified in discussion board) is below
+
+```{r}
+#Find the most popular male baby name across all ethnicities
+most_popular<-baby_names%>%
+  filter(gender=="MALE")%>%
+  group_by(childs_first_name)%>%
+  summarise(mean = mean(rank, na.rm=TRUE))%>%
+  arrange(mean)%>%
+  View()
+#Aparrently its Moshe?? Ethan is the second best and includes all ethnicities, "Moshe" is only for white people..
+
+#Produce a similar table showing the most popular name among male children over time. Including "Moshe"" just because it has the lowest average, even though there is no nonwhite rank data
+popular_males <- baby_names %>%
+  filter(gender=="MALE")%>%
+  select(-c(count))%>%
+  pivot_wider(names_from = "year_of_birth",
+              values_from=rank)%>%
+  filter(childs_first_name=="moshe" | childs_first_name=="ethan")%>%
+  arrange(childs_first_name)%>%
+  View()
+
+```
+
+#########################################
+#The second one. You need to create a data frame that has rows for ethnicities and columns for years, and each cell contains the most popular boy name for that ethnicity / year. 
+#########################################
+```{r}
+name_as_cell <- baby_names %>%
+  filter(gender=="MALE")%>%
+  select(-c(count))%>%
+  filter(rank==1) %>% 
+  pivot_wider(names_from = "year_of_birth",
+              values_from=childs_first_name)
+
+View(name_as_cell)
+head(name_as_cell)
+  
+
+
+
+```
+
+
+%>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% %>% 
+
+
+  
+  
+  
