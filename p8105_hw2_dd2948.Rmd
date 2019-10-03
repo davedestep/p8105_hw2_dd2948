@@ -46,6 +46,19 @@ precip2017_2018 <-bind_rows(precip2017, precip2018)%>%
 #Write a Paragraph
 #############
 
+It might be obvious, but there are 24 rows in the stacked 2017 and 2018 precipitation data. It's good to knwo there are no missing months! This data is helpful and allows us to think about the Mr. Trashwheel data better. Perhaps months with more precipitations collected more trash. The key variable here is "total" (for total precipitation), and year and month.
+``
+
+The Trashwheel dataset includes several key variables with dimensions: `r dim(trash)` (344 observations, 16 variables). Month, year, and all the trash cariables are key variables in this dataset.
+
+Total precipitation in 2018 is `r sum(precip2018$total)` inches.
+The median number of sports bals collected in 2017 was 
+```{r} 
+trash %>% group_by(year) %>%  summarize(median(sports_balls, na.rm=TRUE))
+``` 
+(The median is 8)
+
+
 
 
 ##Question 2
@@ -99,7 +112,7 @@ The key variables in the new data set are "president", "close", and "percent_une
 ```{r}
 baby_names<-read_csv("./data/Popular_Baby_Names.csv")
 #The following table shows the case and naming issues with the Ethnicity variable
-table(baby_names$Ethnicity)
+baby_names %>% count(Ethnicity) %>%  knitr::kable()
 
 #recode ethnicity variabe, make variables lowercase, make cell contents lowercase to remove since different name cases, duplictates with distinct()
 baby_names<- baby_names %>%
@@ -108,7 +121,7 @@ baby_names<- baby_names %>%
   mutate(childs_first_name = str_to_lower(childs_first_name))%>%
   distinct()
 
-table(baby_names$ethnicity)
+baby_names %>% count(ethnicity) %>%  knitr::kable()
 
 
 #Produce a well-structured, reader-friendly table showing the rank in popularity of the name "Olivia" as a female baby name over time; this should have rows for ethnicities and columns for year. 
